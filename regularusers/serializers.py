@@ -14,13 +14,24 @@ class UserSerializer(serializers.ModelSerializer):
 
 class RequestOtpSerializer(serializers.Serializer):
     receiver = serializers.CharField(max_length=50 , allow_null=False)
-    channel = serializers.ChoiceField(choices=OTPRequest.OtpChannel.choices)
+    channel  = serializers.ChoiceField(choices=OTPRequest.OtpChannel.choices)
+    
+    def validate_receiver(self, value):
+        if not value:
+            raise serializers.ValidationError("فیلد شماره همراه الزامیست")
+        if not value.isdigit():
+            raise serializers.ValidationError("شماره همراه باید از نوع عدد باشد.")
+        if not value.startswith('0'):
+            raise serializers.ValidationError("فرمت شماره همراه اشتباه است . حتما باید با صفر شروع شده باشد.")
+        if len(value) != 11:
+            raise serializers.ValidationError("شماره همراه اشتباه است.")
+        return value
     
 
 class ResponseOtpRequestSerializer(serializers.ModelSerializer):
     class Meta:
         model = OTPRequest
-        fields = ['request_id']    
+        fields = ['request_id' , 'receiver']    
         
 
 

@@ -9,6 +9,7 @@ class SendOtpCode:
         self.password = password
 
     def send_by_sms(self):
+        print(self.password)
         url = "https://ippanel.com/api/select"
         payload = {
             "op": "pattern",

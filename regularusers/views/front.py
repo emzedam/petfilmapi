@@ -30,7 +30,7 @@ class FrontLoginViaOtpView(APIView):
             
             userExist = User.objects.filter(phone_number=data['receiver']).exists()
             if not userExist:
-                return Response({"error" : "این شماره همراه در سیستم ثبت نام نشده"}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message" : "شماره همراه در سیستم یافت نشد. ابتدا ثبت نام کنید"}, status=status.HTTP_400_BAD_REQUEST)
             
             try:
                 otp = OTPRequest.objects.generate(data)
@@ -41,13 +41,13 @@ class FrontLoginViaOtpView(APIView):
                 elif data['channel'] == 'E-Mail':
                     sendOtp.send_by_email()   
                 else:
-                    return Response({"error" : "Invalid channel"}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response({"message": "کانال مربوط به ارسال کد معتبر نمیباشد"}, status=status.HTTP_400_BAD_REQUEST)
                          
                 return Response(data=ResponseOtpRequestSerializer(otp).data , status=status.HTTP_200_OK)
             except Exception as e:
-                return Response(status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                return Response({"message": "خطایی در روند ارسال کد رخ داد !"} ,status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
-            return Response(serializer.errors , status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "خطایی رخ داد . ساختار و فرمت موبایل را رعایت کنید"} , status=status.HTTP_400_BAD_REQUEST)
     
     
     def post(self , request):
@@ -57,7 +57,6 @@ class FrontLoginViaOtpView(APIView):
             if OTPRequest.objects.is_verify(data):
                 try: 
                     user = User.objects.filter(phone_number=data['receiver']).first()
-                    print(user)
                     if user:
                         refresh = RefreshToken.for_user(user)
 
@@ -73,9 +72,9 @@ class FrontLoginViaOtpView(APIView):
                     return Response({"message": "کاربر یافت نشد"} , status=status.HTTP_404_NOT_FOUND)
                         
             else:
-                return Response(data={"message": "the phone number or passcode is incurrect or expired passcode!"} , status=status.HTTP_401_UNAUTHORIZED)
+                return Response(data={"message": "کد تایید ارسال شده معتبر نمیباشد و یا منقضی شده !"} , status=status.HTTP_401_UNAUTHORIZED)
         else:
-            return Response(data=serializer.errors , status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "خطای اعتبار سنجی پارامتر های ارسالی!"} , status=status.HTTP_400_BAD_REQUEST)
 
     
 
@@ -87,11 +86,11 @@ class UserRegisterView(APIView):
             existUser = User.objects.filter(phone_number=request.data.get("phone_number")).exists()
             if not existUser:
                 serializer.save()
-                return Response({"message": "ثبت نام با موفقیت انجام شد."}, status=status.HTTP_200_OK)
+                return Response({"message": "ثبت نام شما در پت فیلم انجام شد. وارد شوید."}, status=status.HTTP_200_OK)
             else:
-                return Response({"message": "قبلا با این شماره همراه ثبت نام کرده اید"}, status= status.HTTP_200_OK)
+                return Response({"message": "قبلا با این شماره همراه ثبت نام کرده اید"}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(data=serializer.errors , status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "خطای اعتبار سنجی اطلاعات!"} , status=status.HTTP_400_BAD_REQUEST)
 
 
 class UserLogoutView(APIView):
@@ -106,9 +105,9 @@ class UserLogoutView(APIView):
             # اضافه کردن توکن به لیست سیاه
             token.blacklist()
 
-            return Response({"message": "Logout successful."}, status=status.HTTP_205_RESET_CONTENT)
+            return Response({"message": "با موفقیت از حساب خود خارج شدید."}, status=status.HTTP_205_RESET_CONTENT)
         except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"message": "خطایی رخ داد!"}, status=status.HTTP_400_BAD_REQUEST)
 
     
 class CurrentUserView(APIView):         
