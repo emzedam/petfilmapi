@@ -59,7 +59,8 @@ class FrontLoginViaOtpView(APIView):
                     user = User.objects.filter(phone_number=data['receiver']).first()
                     if user:
                         refresh = RefreshToken.for_user(user)
-
+                        user.verified = True
+                        user.save()
                         return Response({
                             "token": str(refresh.access_token),
                             "refresh": str(refresh),

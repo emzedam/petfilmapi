@@ -6,11 +6,14 @@ from .models import (
 )
 
 class UserSerializer(serializers.ModelSerializer):
-    videos = VideoSerializer(many=True)
+    videos = serializers.SerializerMethodField()
     class Meta:
         model = User
         fields = ['phone_number' , 'first_name' , 'last_name' , 'videos']
 
+    def get_videos(self, obj):
+        videos = obj.videos.all().order_by('-created_at')
+        return VideoSerializer(videos, many=True).data
 
 class RequestOtpSerializer(serializers.Serializer):
     receiver = serializers.CharField(max_length=50 , allow_null=False)
@@ -50,7 +53,7 @@ class ObtainTokenSerializer(serializers.Serializer):
 class UserRegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['phone_number', 'first_name', 'last_name']
+        fields = ['phone_number', 'username' , 'first_name', 'last_name']
 
     # ولیدیشن برای شماره همراه
     def validate_phone_number(self, value):
