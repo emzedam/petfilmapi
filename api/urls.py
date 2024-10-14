@@ -35,6 +35,9 @@ urlpatterns = [
     path('api/admin/', include('regularusers.urls.admin')),
     path('api/front/', include('regularusers.urls.front')),
     
+    # footer endpoints
+    path('api/front/', include('footer.urls')),
+    
     # favorites
     path('api/front/' , include('favorites.urls'))
     
